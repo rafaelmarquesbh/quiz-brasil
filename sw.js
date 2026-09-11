@@ -1,9 +1,9 @@
 /* Service Worker — cache total para rodar offline (PWA) */
 'use strict';
-const CACHE = 'quiz-brasil-v1';
+const CACHE = 'quiz-brasil-v2';
 const ASSETS = [
   './', './index.html', './style.css', './data.js', './app.js',
-  './manifest.json', './icons/icon-192.png', './icons/icon-512.png'
+  './manifest.json', './favicon.ico', './icons/icon-192.png', './icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {

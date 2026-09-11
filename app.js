@@ -352,7 +352,7 @@ function drawLine(cv, points){
 /* ---------- tela de estatísticas ---------- */
 function renderStats(){
   const acc = DB.answered ? Math.round(DB.correct/DB.answered*100) : 0;
-  $('#stGames').textContent  = statBox(DB.games,'Partidas');
+  $('#stGames').innerHTML   = statBox(DB.games,'Partidas');
   $('#stAcc').innerHTML      = statBox(acc+'%','Precisão geral');
   $('#stBest').innerHTML     = statBox(DB.bestScore,'Recorde');
   $('#stAvg').innerHTML      = statBox(DB.games?Math.round(DB.totalScore/DB.games):0,'Média de pontos');
