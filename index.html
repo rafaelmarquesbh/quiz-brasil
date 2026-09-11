@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz Brasil — Bandeiras, Capitais e Estados</title>
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Quiz das bandeiras, capitais e estados do Brasil. Progressivo (PWA): instale e jogue offline.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quiz Brasil">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">BR</div>
+    <h1>Quiz Brasil</h1>
+    <button id="btnSound" class="icon-btn" title="Som">🔊</button>
+    <button id="btnInstall" class="icon-btn" title="Instalar app">⬇ Instalar</button>
+  </header>
+
+  <main>
+    <!-- ===== HOME ===== -->
+    <section id="screen-home" class="screen active">
+      <div class="hero">
+        <h2>Bandeiras, Capitais &amp; Estados 🗺️</h2>
+        <p>Teste seus conhecimentos sobre as 27 unidades federativas do Brasil!</p>
+      </div>
+
+      <div class="section-t">Escolha o modo</div>
+      <div class="modes">
+        <button class="mode-card" data-mode="bandeiras">
+          <div class="emoji">🏳️</div>
+          <h3>Bandeiras</h3>
+          <p>Identifique o estado pela bandeira (estilizada)</p>
+        </button>
+        <button class="mode-card" data-mode="capitais">
+          <div class="emoji">🏛️</div>
+          <h3>Capitais</h3>
+          <p>Diga a capital de cada estado</p>
+        </button>
+        <button class="mode-card" data-mode="estados">
+          <div class="emoji">📍</div>
+          <h3>Estados</h3>
+          <p>Capitais e siglas: encontre o estado</p>
+        </button>
+        <button class="mode-card misto" data-mode="misto">
+          <div class="emoji">🎯</div>
+          <div><h3>Modo Misto</h3>
+          <p>Tudo junto e misturado — o desafio completo!</p></div>
+        </button>
+      </div>
+
+      <div class="section-t">Dificuldade</div>
+      <div class="diff-row">
+        <button class="diff-btn" data-diff="facil">Fácil · 20s</button>
+        <button class="diff-btn sel" data-diff="medio">Médio · 15s</button>
+        <button class="diff-btn" data-diff="dificil">Difícil · 10s</button>
+      </div>
+
+      <div class="home-stats">
+        <div class="pill"><b id="bestScoreHome">0</b><span>Recorde</span></div>
+        <div class="pill"><b id="gamesHome">0</b><span>Partidas</span></div>
+        <button class="pill" id="btnStats" style="cursor:pointer"><b>📊</b><span>Estatísticas</span></button>
+      </div>
+    </section>
+
+    <!-- ===== QUIZ ===== -->
+    <section id="screen-quiz" class="screen">
+      <div class="quiz-top">
+        <span id="qIndex">Questão 1 de 10</span>
+        <span id="qCat" class="chip">Bandeiras</span>
+        <span class="score-chip">⭐ <span id="scoreLive">0</span></span>
+        <span class="streak-chip" id="streakLive">🔥 0</span>
+      </div>
+      <div class="time-track"><div id="timeBar"></div></div>
+
+      <div class="q-card">
+        <div id="qPrompt"></div>
+        <div class="flag-wrap" id="flagWrap" style="display:none"></div>
+        <div id="options"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+      <div class="quiz-actions">
+        <button id="btnQuit" class="btn ghost" style="flex:none;padding:10px 22px">Sair da partida</button>
+      </div>
+    </section>
+
+    <!-- ===== RESULTADO ===== -->
+    <section id="screen-result" class="screen">
+      <div class="res-card">
+        <div id="resMode">Bandeiras</div>
+        <div id="resScore">0</div>
+        <span id="resRecord">🏆 Novo recorde!</span>
+        <p id="resMsg"></p>
+        <div class="res-stats" id="resStats"></div>
+        <div class="charts">
+          <div class="chart-box">
+            <h4>Precisão</h4>
+            <canvas id="chartAcc"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4>Por categoria</h4>
+            <canvas id="chartCats"></canvas>
+          </div>
+        </div>
+        <div class="res-actions">
+          <button id="btnAgain" class="btn">Jogar de novo</button>
+          <button id="btnHomeResult" class="btn ghost">Menu</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ESTATÍSTICAS ===== -->
+    <section id="screen-stats" class="screen">
+      <div class="section-t">Desempenho geral</div>
+      <div class="stats-grid">
+        <div class="pill" id="stGames"></div>
+        <div class="pill" id="stAcc"></div>
+        <div class="pill" id="stBest"></div>
+        <div class="pill" id="stAvg"></div>
+      </div>
+      <div class="chart-box">
+        <h4>Precisão por categoria</h4>
+        <canvas id="stCats"></canvas>
+      </div>
+      <div class="chart-box wide">
+        <h4>Pontuação dos últimos jogos</h4>
+        <canvas id="stHist"></canvas>
+      </div>
+      <div class="res-actions">
+        <button id="btnBackStats" class="btn ghost">Voltar</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<canvas id="confetti"></canvas>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
