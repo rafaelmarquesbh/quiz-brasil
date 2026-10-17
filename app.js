@@ -181,7 +181,30 @@ function renderQuestion(){
   $('#qPrompt').innerHTML = q.prompt;
   const fw = $('#flagWrap');
   if(q.flag){ fw.innerHTML = flagSVG(q.flag); fw.style.display='block'; }
-  else if(q.image){ const fallback = q.cat==='times' ? '⚽ Escudo indisponível' : '🏳️ Bandeira indisponível'; fw.innerHTML = `<img class="flag ${q.imageClass||''}" src="${q.image}" alt="Imagem da pergunta" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'image-fallback\'>${fallback}</span>')">`; fw.style.display='flex'; }
+  else if(q.image){
+    fw.innerHTML = '';
+    const img = document.createElement('img');
+    img.className = 'flag ' + (q.imageClass || '');
+    img.alt = q.cat === 'times' ? 'Escudo do ' + q.answer : 'Bandeira de ' + q.answer;
+    img.referrerPolicy = 'no-referrer';
+    img.decoding = 'async';
+    img.src = q.image;
+    img.onerror = () => {
+      img.remove();
+      const fallback = document.createElement('div');
+      fallback.className = q.cat === 'times' ? 'club-fallback' : 'image-fallback';
+      if (q.cat === 'times') {
+        const words = q.answer.split(/\\s+/).filter(Boolean);
+        const initials = words.length > 1 ? words.slice(0,2).map(w=>w[0]).join('') : q.answer.slice(0,3);
+        fallback.innerHTML = '<span class="fallback-shield">' + esc(initials.toUpperCase()) + '</span><span>' + esc(q.answer) + '</span>';
+      } else {
+        fallback.textContent = '🏳️ Bandeira indisponível';
+      }
+      fw.appendChild(fallback);
+    };
+    fw.appendChild(img);
+    fw.style.display='flex';
+  }
   else { fw.innerHTML=''; fw.style.display='none'; }
 
   const grid = $('#options');
