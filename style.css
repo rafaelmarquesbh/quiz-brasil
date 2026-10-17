@@ -169,3 +169,5 @@ button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 #qCat[data-cat=capitaisMundiais]{background:rgba(171,71,188,.15);color:#ce93d8}
 #qCat[data-cat=times]{background:rgba(239,83,80,.15);color:#ef9a9a}
 @media(max-width:600px){.flag.club-crest{width:124px;height:124px}}
+
+#qCat[data-cat=bandeirasMundiais]{background:rgba(38,198,218,.15);color:#26c6da}
