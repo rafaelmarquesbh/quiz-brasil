@@ -1,6 +1,6 @@
 /* Service Worker — cache total para rodar offline (PWA) */
 'use strict';
-const CACHE = 'quiz-brasil-v3';
+const CACHE = 'quiz-brasil-v4';
 const ASSETS = [
   './', './index.html', './style.css', './data.js', './app.js',
   './manifest.json', './favicon.ico', './icons/icon-192.png', './icons/icon-512.png'
