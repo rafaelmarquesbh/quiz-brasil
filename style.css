@@ -171,3 +171,8 @@ button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 @media(max-width:600px){.flag.club-crest{width:124px;height:124px}}
 
 #qCat[data-cat=bandeirasMundiais]{background:rgba(38,198,218,.15);color:#26c6da}
+
+/* Escudo alternativo visível caso o provedor externo não responda */
+.club-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;color:var(--txt);font-size:.9rem;font-weight:700;text-align:center;padding:8px}
+.fallback-shield{width:96px;height:108px;display:grid;place-items:center;clip-path:polygon(5% 0,95% 0,90% 68%,50% 100%,10% 68%);background:linear-gradient(145deg,#ffca28,#ef5350);border:3px solid rgba(255,255,255,.8);color:#fff;font-size:1.7rem;font-weight:900;text-shadow:0 2px 4px #0008;filter:drop-shadow(0 6px 8px #0005)}
+@media(max-width:600px){.club-fallback{min-height:124px}.fallback-shield{width:82px;height:92px}}
