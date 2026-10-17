@@ -18,13 +18,15 @@ const store = {
 };
 let DB = store.load('quizBrasil', null) || {
   games:0, totalScore:0, bestScore:0, correct:0, answered:0,
-  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0} },
+  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} },
   history:[] // últimos jogos: {score, acc, date}
 };
 let settings = Object.assign({ diff:'medio', sound:true }, store.load('quizBrasilSet', {}));
+// Compatibilidade com estatísticas salvas de versões anteriores.
+DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} }, DB.byCat || {});
 
 const DIFFS = { facil:{label:'Fácil', time:20}, medio:{label:'Médio', time:15}, dificil:{label:'Difícil', time:10} };
-const CAT_LABEL = { bandeiras:'Bandeiras', capitais:'Capitais', estados:'Estados' };
+const CAT_LABEL = { bandeiras:'Bandeiras', capitais:'Capitais', estados:'Estados', tabuada:'Tabuada de X' };
 
 /* ---------- áudio (WebAudio, sem arquivos) ---------- */
 let AC = null;
@@ -63,6 +65,16 @@ function startGame(mode){
 }
 
 function makeQuestion(mode, st){
+  if(mode === 'tabuada'){
+    const a = 1 + ((Math.random()*10)|0), b = 1 + ((Math.random()*10)|0);
+    const answer = a*b;
+    const pool = new Set([answer]);
+    while(pool.size < 4){
+      const candidate = Math.random() < .65 ? answer + (((Math.random()*9)|0)+1)*(Math.random()<.5?-1:1) : (1+((Math.random()*10)|0))*(1+((Math.random()*10)|0));
+      if(candidate > 0 && candidate <= 100 && candidate !== answer) pool.add(candidate);
+    }
+    return { cat:'tabuada', prompt:`Quanto é <strong>${a} × ${b}</strong>?`, answer:String(answer), options:shuffle([...pool].map(String)) };
+  }
   if(mode === 'misto') mode = rand(['bandeiras','capitais','estados']);
   if(mode === 'bandeiras')
     return { cat:'bandeiras', prompt:'De qual unidade federativa é esta bandeira?',
@@ -241,11 +253,11 @@ function endGame(){
 
   drawDonut($('#chartAcc'), acc);
   drawBars($('#chartCats'),
-    ['Bandeiras','Capitais','Estados'],
-    ['bandeiras','capitais','estados'].map(k=>{
+    ['Bandeiras','Capitais','Estados','Tabuada'],
+    ['bandeiras','capitais','estados','tabuada'].map(k=>{
       const v = G.byCat[k]; return v.t ? Math.round(v.c/v.t*100) : 0;
     }),
-    ['#ff9800','#00e676','#40c4ff']);
+    ['#ff9800','#00e676','#40c4ff','#e040fb']);
 
   if(acc>=70){ sfx.win(); confetti(); }
 }
@@ -360,7 +372,7 @@ function renderStats(){
     ['Bandeiras','Capitais','Estados'],
     ['bandeiras','capitais','estados'].map(k=>{
       const v=DB.byCat[k]; return v.t?Math.round(v.c/v.t*100):0;
-    }), ['#ff9800','#00e676','#40c4ff']);
+    }), ['#ff9800','#00e676','#40c4ff','#e040fb']);
   drawLine($('#stHist'), DB.history.map(x=>x.score));
 }
 
