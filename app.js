@@ -30,7 +30,7 @@ const CAT_LABEL = { bandeiras:'Bandeiras do Brasil', capitais:'Capitais do Brasi
 
 /* ---------- países, capitais mundiais e clubes ---------- */
 const WORLD_COUNTRIES = [
-  {name:'Argentina',capital:'Buenos Aires',code:'ar'},{name:'Austrália',capital:'Camberra',code:'au'},
+  {name:'Argentina',capital:'Buenos Aires',code:'ar'},{name:'Brasil',capital:'Brasília',code:'br'},{name:'Austrália',capital:'Camberra',code:'au'},
   {name:'Alemanha',capital:'Berlim',code:'de'},{name:'Arábia Saudita',capital:'Riade',code:'sa'},
   {name:'África do Sul',capital:'Pretória',code:'za'},{name:'Bélgica',capital:'Bruxelas',code:'be'},
   {name:'Bolívia',capital:'Sucre',code:'bo'},{name:'Canadá',capital:'Ottawa',code:'ca'},
@@ -57,7 +57,7 @@ const WORLD_COUNTRIES = [
   {name:'Vietnã',capital:'Hanói',code:'vn'}
 ];
 const CONTINENT_BY_CODE = {};
-['ar bo cl co ec pe uy ve'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='América do Sul');
+['ar br bo cl co ec pe uy ve'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='América do Sul');
 ['ca cr cu mx us'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='América do Norte');
 ['au nz'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='Oceania');
 ['cn in id jp kr pk sg th vn sa il'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='Ásia');
