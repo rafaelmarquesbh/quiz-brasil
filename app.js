@@ -18,15 +18,63 @@ const store = {
 };
 let DB = store.load('quizBrasil', null) || {
   games:0, totalScore:0, bestScore:0, correct:0, answered:0,
-  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} },
+  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
   history:[] // últimos jogos: {score, acc, date}
 };
 let settings = Object.assign({ diff:'medio', sound:true }, store.load('quizBrasilSet', {}));
 // Compatibilidade com estatísticas salvas de versões anteriores.
-DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} }, DB.byCat || {});
+DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} }, DB.byCat || {});
 
 const DIFFS = { facil:{label:'Fácil', time:20}, medio:{label:'Médio', time:15}, dificil:{label:'Difícil', time:10} };
-const CAT_LABEL = { bandeiras:'Bandeiras', capitais:'Capitais', estados:'Estados', tabuada:'Tabuada de X' };
+const CAT_LABEL = { bandeiras:'Bandeiras do Brasil', capitais:'Capitais do Brasil', estados:'Estados', tabuada:'Tabuada de X', paises:'Bandeiras do Mundo', capitaisMundiais:'Capitais Mundiais', times:'Escudos de Times' };
+
+/* ---------- países, capitais mundiais e clubes ---------- */
+const WORLD_COUNTRIES = [
+  {name:'Argentina',capital:'Buenos Aires',code:'ar'},{name:'Austrália',capital:'Camberra',code:'au'},
+  {name:'Alemanha',capital:'Berlim',code:'de'},{name:'Arábia Saudita',capital:'Riade',code:'sa'},
+  {name:'África do Sul',capital:'Pretória',code:'za'},{name:'Bélgica',capital:'Bruxelas',code:'be'},
+  {name:'Bolívia',capital:'Sucre',code:'bo'},{name:'Canadá',capital:'Ottawa',code:'ca'},
+  {name:'Chile',capital:'Santiago',code:'cl'},{name:'China',capital:'Pequim',code:'cn'},
+  {name:'Colômbia',capital:'Bogotá',code:'co'},{name:'Coreia do Sul',capital:'Seul',code:'kr'},
+  {name:'Costa Rica',capital:'San José',code:'cr'},{name:'Cuba',capital:'Havana',code:'cu'},
+  {name:'Dinamarca',capital:'Copenhague',code:'dk'},{name:'Egito',capital:'Cairo',code:'eg'},
+  {name:'Equador',capital:'Quito',code:'ec'},{name:'Espanha',capital:'Madri',code:'es'},
+  {name:'Estados Unidos',capital:'Washington, D.C.',code:'us'},{name:'Finlândia',capital:'Helsinque',code:'fi'},
+  {name:'França',capital:'Paris',code:'fr'},{name:'Grécia',capital:'Atenas',code:'gr'},
+  {name:'Índia',capital:'Nova Délhi',code:'in'},{name:'Indonésia',capital:'Jacarta',code:'id'},
+  {name:'Irlanda',capital:'Dublin',code:'ie'},{name:'Israel',capital:'Jerusalém',code:'il'},
+  {name:'Itália',capital:'Roma',code:'it'},{name:'Japão',capital:'Tóquio',code:'jp'},
+  {name:'Marrocos',capital:'Rabat',code:'ma'},{name:'México',capital:'Cidade do México',code:'mx'},
+  {name:'Noruega',capital:'Oslo',code:'no'},{name:'Nova Zelândia',capital:'Wellington',code:'nz'},
+  {name:'Países Baixos',capital:'Amsterdã',code:'nl'},{name:'Paquistão',capital:'Islamabad',code:'pk'},
+  {name:'Peru',capital:'Lima',code:'pe'},{name:'Polônia',capital:'Varsóvia',code:'pl'},
+  {name:'Portugal',capital:'Lisboa',code:'pt'},{name:'Reino Unido',capital:'Londres',code:'gb'},
+  {name:'República Tcheca',capital:'Praga',code:'cz'},{name:'Rússia',capital:'Moscou',code:'ru'},
+  {name:'Singapura',capital:'Singapura',code:'sg'},{name:'Suécia',capital:'Estocolmo',code:'se'},
+  {name:'Suíça',capital:'Berna',code:'ch'},{name:'Tailândia',capital:'Bangkok',code:'th'},
+  {name:'Turquia',capital:'Ancara',code:'tr'},{name:'Ucrânia',capital:'Kyiv',code:'ua'},
+  {name:'Uruguai',capital:'Montevidéu',code:'uy'},{name:'Venezuela',capital:'Caracas',code:'ve'},
+  {name:'Vietnã',capital:'Hanói',code:'vn'}
+];
+const CLUBS = [
+  {name:'Flamengo',league:'Brasil · Série A',id:127},{name:'Palmeiras',league:'Brasil · Série A',id:121},
+  {name:'Corinthians',league:'Brasil · Série A',id:131},{name:'São Paulo',league:'Brasil · Série A',id:126},
+  {name:'Santos',league:'Brasil · Série A',id:128},{name:'Fluminense',league:'Brasil · Série A',id:124},
+  {name:'Botafogo',league:'Brasil · Série A',id:120},{name:'Vasco da Gama',league:'Brasil · Série A',id:133},
+  {name:'Grêmio',league:'Brasil · Série A',id:130},{name:'Internacional',league:'Brasil · Série A',id:119},
+  {name:'Arsenal',league:'Inglaterra · Premier League',id:42},{name:'Chelsea',league:'Inglaterra · Premier League',id:49},
+  {name:'Liverpool',league:'Inglaterra · Premier League',id:40},{name:'Manchester City',league:'Inglaterra · Premier League',id:50},
+  {name:'Manchester United',league:'Inglaterra · Premier League',id:33},{name:'Tottenham',league:'Inglaterra · Premier League',id:47},
+  {name:'Newcastle United',league:'Inglaterra · Premier League',id:34},{name:'Aston Villa',league:'Inglaterra · Premier League',id:66},
+  {name:'Real Madrid',league:'Espanha · LaLiga',id:541},{name:'Barcelona',league:'Espanha · LaLiga',id:529},
+  {name:'Atlético de Madrid',league:'Espanha · LaLiga',id:530},{name:'Sevilla',league:'Espanha · LaLiga',id:536},
+  {name:'Valencia',league:'Espanha · LaLiga',id:532},{name:'Athletic Club',league:'Espanha · LaLiga',id:531},
+  {name:'Real Sociedad',league:'Espanha · LaLiga',id:548},{name:'Villarreal',league:'Espanha · LaLiga',id:533},
+  {name:'Benfica',league:'Portugal · Primeira Liga',id:211},{name:'Porto',league:'Portugal · Primeira Liga',id:212},
+  {name:'Sporting CP',league:'Portugal · Primeira Liga',id:228},{name:'Braga',league:'Portugal · Primeira Liga',id:217},
+  {name:'Vitória de Guimarães',league:'Portugal · Primeira Liga',id:294},{name:'Boavista',league:'Portugal · Primeira Liga',id:224}
+];
+
 
 /* ---------- áudio (WebAudio, sem arquivos) ---------- */
 let AC = null;
@@ -54,17 +102,26 @@ const sfx = {
 let G = null, timerId = null;
 
 function startGame(mode){
-  const qs = sample(STATES, 10).map(st => makeQuestion(mode, st));
+  const pool = mode==='paises' || mode==='capitaisMundiais' ? WORLD_COUNTRIES : mode==='times' ? CLUBS : STATES;
+  const qs = mode==='tabuada' ? Array.from({length:10},()=>makeQuestion(mode,null)) : sample(pool,10).map(item => makeQuestion(mode,item));
   G = {
     mode, qs, i:0, score:0, streak:0, bestStreak:0, correct:0, locked:false,
     time: DIFFS[settings.diff].time,
-    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} },
+    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
   };
   showScreen('quiz');
   renderQuestion();
 }
 
 function makeQuestion(mode, st){
+  if(mode === 'misto'){
+    const selected=rand(['bandeiras','capitais','estados','paises','capitaisMundiais','times','tabuada']);
+    const item=['paises','capitaisMundiais'].includes(selected)?rand(WORLD_COUNTRIES):selected==='times'?rand(CLUBS):selected==='tabuada'?null:rand(STATES);
+    return makeQuestion(selected,item);
+  }
+  if(mode === 'paises') return {cat:'paises',prompt:'Qual país esta bandeira representa?',image:'https://flagcdn.com/w320/'+st.code+'.png',imageClass:'world-flag',answer:st.name,options:mkOpts(WORLD_COUNTRIES.map(x=>x.name),st.name)};
+  if(mode === 'capitaisMundiais') return {cat:'capitaisMundiais',prompt:'Qual é a capital de <b>'+esc(st.name)+'</b>?',answer:st.capital,options:mkOpts(WORLD_COUNTRIES.map(x=>x.capital),st.capital)};
+  if(mode === 'times') return {cat:'times',prompt:'A qual clube pertence este escudo?<br><small>'+esc(st.league)+'</small>',image:'https://media.api-sports.io/football/teams/'+st.id+'.png',imageClass:'club-crest',answer:st.name,options:mkOpts(CLUBS.map(x=>x.name),st.name)};
   if(mode === 'tabuada'){
     const a = 1 + ((Math.random()*10)|0), b = 1 + ((Math.random()*10)|0);
     const answer = a*b;
@@ -75,7 +132,6 @@ function makeQuestion(mode, st){
     }
     return { cat:'tabuada', prompt:`Quanto é <strong>${a} × ${b}</strong>?`, answer:String(answer), options:shuffle([...pool].map(String)) };
   }
-  if(mode === 'misto') mode = rand(['bandeiras','capitais','estados']);
   if(mode === 'bandeiras')
     return { cat:'bandeiras', prompt:'De qual unidade federativa é esta bandeira?',
              flag:st, answer:st.name, options:mkOpts(STATES.map(x=>x.name), st.name) };
@@ -115,6 +171,7 @@ function renderQuestion(){
   $('#qPrompt').innerHTML = q.prompt;
   const fw = $('#flagWrap');
   if(q.flag){ fw.innerHTML = flagSVG(q.flag); fw.style.display='block'; }
+  else if(q.image){ fw.innerHTML = `<img class="flag ${q.imageClass||''}" src="${q.image}" alt="Imagem da pergunta" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'image-fallback\'>Imagem indisponível</span>')">`; fw.style.display='flex'; }
   else { fw.innerHTML=''; fw.style.display='none'; }
 
   const grid = $('#options');
@@ -253,11 +310,11 @@ function endGame(){
 
   drawDonut($('#chartAcc'), acc);
   drawBars($('#chartCats'),
-    ['Bandeiras','Capitais','Estados','Tabuada'],
-    ['bandeiras','capitais','estados','tabuada'].map(k=>{
+    ['BR Flags','BR Caps','Estados','Tabuada','Mundo','Cap. Mundo','Times'],
+    ['bandeiras','capitais','estados','tabuada','paises','capitaisMundiais','times'].map(k=>{
       const v = G.byCat[k]; return v.t ? Math.round(v.c/v.t*100) : 0;
     }),
-    ['#ff9800','#00e676','#40c4ff','#e040fb']);
+    ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#ab47bc','#ef5350']);
 
   if(acc>=70){ sfx.win(); confetti(); }
 }
@@ -369,10 +426,10 @@ function renderStats(){
   $('#stBest').innerHTML     = statBox(DB.bestScore,'Recorde');
   $('#stAvg').innerHTML      = statBox(DB.games?Math.round(DB.totalScore/DB.games):0,'Média de pontos');
   drawBars($('#stCats'),
-    ['Bandeiras','Capitais','Estados','Tabuada'],
-    ['bandeiras','capitais','estados','tabuada'].map(k=>{
+    ['BR Flags','BR Caps','Estados','Tabuada','Mundo','Cap. Mundo','Times'],
+    ['bandeiras','capitais','estados','tabuada','paises','capitaisMundiais','times'].map(k=>{
       const v=DB.byCat[k]; return v.t?Math.round(v.c/v.t*100):0;
-    }), ['#ff9800','#00e676','#40c4ff','#e040fb']);
+    }), ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#ab47bc','#ef5350']);
   drawLine($('#stHist'), DB.history.map(x=>x.score));
 }
 
