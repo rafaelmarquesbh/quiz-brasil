@@ -18,7 +18,7 @@ const store = {
 };
 let DB = store.load('quizBrasil', null) || {
   games:0, totalScore:0, bestScore:0, correct:0, answered:0,
-  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
+  byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, bandeirasMundiais:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
   history:[] // últimos jogos: {score, acc, date}
 };
 let settings = Object.assign({ diff:'medio', sound:true }, store.load('quizBrasilSet', {}));
@@ -26,7 +26,7 @@ let settings = Object.assign({ diff:'medio', sound:true }, store.load('quizBrasi
 DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} }, DB.byCat || {});
 
 const DIFFS = { facil:{label:'Fácil', time:20}, medio:{label:'Médio', time:15}, dificil:{label:'Difícil', time:10} };
-const CAT_LABEL = { bandeiras:'Bandeiras do Brasil', capitais:'Capitais do Brasil', estados:'Estados', tabuada:'Tabuada de X', paises:'Bandeiras do Mundo', capitaisMundiais:'Capitais Mundiais', times:'Escudos de Times' };
+const CAT_LABEL = { bandeiras:'Bandeiras do Brasil', capitais:'Capitais do Brasil', estados:'Estados', tabuada:'Tabuada de X', paises:'Países do Mundo', bandeirasMundiais:'Bandeiras do Mundo', capitaisMundiais:'Capitais Mundiais', times:'Escudos de Times' };
 
 /* ---------- países, capitais mundiais e clubes ---------- */
 const WORLD_COUNTRIES = [
@@ -56,6 +56,15 @@ const WORLD_COUNTRIES = [
   {name:'Uruguai',capital:'Montevidéu',code:'uy'},{name:'Venezuela',capital:'Caracas',code:'ve'},
   {name:'Vietnã',capital:'Hanói',code:'vn'}
 ];
+const CONTINENT_BY_CODE = {};
+['ar bo cl co ec pe uy ve'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='América do Sul');
+['ca cr cu mx us'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='América do Norte');
+['au nz'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='Oceania');
+['cn in id jp kr pk sg th vn sa il'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='Ásia');
+['za eg ma'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='África');
+['de be dk es fi fr gr ie it nl no pl pt gb cz ru se ch tr ua'].join(' ').split(' ').forEach(c=>CONTINENT_BY_CODE[c]='Europa');
+WORLD_COUNTRIES.forEach(country=>country.continent=CONTINENT_BY_CODE[country.code] || 'Europa');
+const CONTINENTS = ['África','América do Norte','América do Sul','Ásia','Europa','Oceania'];
 const CLUBS = [
   {name:'Flamengo',league:'Brasil · Série A',id:127},{name:'Palmeiras',league:'Brasil · Série A',id:121},
   {name:'Corinthians',league:'Brasil · Série A',id:131},{name:'São Paulo',league:'Brasil · Série A',id:126},
@@ -102,7 +111,7 @@ const sfx = {
 let G = null, timerId = null;
 
 function startGame(mode){
-  const pool = mode==='paises' || mode==='capitaisMundiais' ? WORLD_COUNTRIES : mode==='times' ? CLUBS : STATES;
+  const pool = mode==='paises' || mode==='bandeirasMundiais' || mode==='capitaisMundiais' ? WORLD_COUNTRIES : mode==='times' ? CLUBS : STATES;
   const qs = mode==='tabuada' ? Array.from({length:10},()=>makeQuestion(mode,null)) : sample(pool,10).map(item => makeQuestion(mode,item));
   G = {
     mode, qs, i:0, score:0, streak:0, bestStreak:0, correct:0, locked:false,
@@ -115,11 +124,12 @@ function startGame(mode){
 
 function makeQuestion(mode, st){
   if(mode === 'misto'){
-    const selected=rand(['bandeiras','capitais','estados','paises','capitaisMundiais','times','tabuada']);
-    const item=['paises','capitaisMundiais'].includes(selected)?rand(WORLD_COUNTRIES):selected==='times'?rand(CLUBS):selected==='tabuada'?null:rand(STATES);
+    const selected=rand(['bandeiras','capitais','estados','paises','bandeirasMundiais','capitaisMundiais','times','tabuada']);
+    const item=['paises','bandeirasMundiais','capitaisMundiais'].includes(selected)?rand(WORLD_COUNTRIES):selected==='times'?rand(CLUBS):selected==='tabuada'?null:rand(STATES);
     return makeQuestion(selected,item);
   }
-  if(mode === 'paises') return {cat:'paises',prompt:'Qual país esta bandeira representa?',image:'https://flagcdn.com/w320/'+st.code+'.png',imageClass:'world-flag',answer:st.name,options:mkOpts(WORLD_COUNTRIES.map(x=>x.name),st.name)};
+  if(mode === 'paises') return {cat:'paises',prompt:'Em qual continente fica <b>'+esc(st.name)+'</b>?',answer:st.continent,options:mkOpts(CONTINENTS,st.continent)};
+  if(mode === 'bandeirasMundiais') return {cat:'bandeirasMundiais',prompt:'Qual país esta bandeira representa?',image:'https://flagcdn.com/w320/'+st.code+'.png',imageClass:'world-flag',answer:st.name,options:mkOpts(WORLD_COUNTRIES.map(x=>x.name),st.name)};
   if(mode === 'capitaisMundiais') return {cat:'capitaisMundiais',prompt:'Qual é a capital de <b>'+esc(st.name)+'</b>?',answer:st.capital,options:mkOpts(WORLD_COUNTRIES.map(x=>x.capital),st.capital)};
   if(mode === 'times') return {cat:'times',prompt:'A qual clube pertence este escudo?<br><small>'+esc(st.league)+'</small>',image:'https://media.api-sports.io/football/teams/'+st.id+'.png',imageClass:'club-crest',answer:st.name,options:mkOpts(CLUBS.map(x=>x.name),st.name)};
   if(mode === 'tabuada'){
@@ -310,11 +320,11 @@ function endGame(){
 
   drawDonut($('#chartAcc'), acc);
   drawBars($('#chartCats'),
-    ['BR Flags','BR Caps','Estados','Tabuada','Mundo','Cap. Mundo','Times'],
-    ['bandeiras','capitais','estados','tabuada','paises','capitaisMundiais','times'].map(k=>{
+    ['BR Flags','BR Caps','Estados','Tabuada','Países','Mundo Flags','Cap. Mundo','Times'],
+    ['bandeiras','capitais','estados','tabuada','paises','bandeirasMundiais','capitaisMundiais','times'].map(k=>{
       const v = G.byCat[k]; return v.t ? Math.round(v.c/v.t*100) : 0;
     }),
-    ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#ab47bc','#ef5350']);
+    ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#26c6da','#ab47bc','#ef5350']);
 
   if(acc>=70){ sfx.win(); confetti(); }
 }
@@ -429,7 +439,7 @@ function renderStats(){
     ['BR Flags','BR Caps','Estados','Tabuada','Mundo','Cap. Mundo','Times'],
     ['bandeiras','capitais','estados','tabuada','paises','capitaisMundiais','times'].map(k=>{
       const v=DB.byCat[k]; return v.t?Math.round(v.c/v.t*100):0;
-    }), ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#ab47bc','#ef5350']);
+    }), ['#ff9800','#00e676','#40c4ff','#e040fb','#29b6f6','#26c6da','#ab47bc','#ef5350']);
   drawLine($('#stHist'), DB.history.map(x=>x.score));
 }
 
