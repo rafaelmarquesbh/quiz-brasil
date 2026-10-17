@@ -58,7 +58,7 @@ function startGame(mode){
   G = {
     mode, qs, i:0, score:0, streak:0, bestStreak:0, correct:0, locked:false,
     time: DIFFS[settings.diff].time,
-    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0} },
+    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0} },
   };
   showScreen('quiz');
   renderQuestion();
@@ -369,8 +369,8 @@ function renderStats(){
   $('#stBest').innerHTML     = statBox(DB.bestScore,'Recorde');
   $('#stAvg').innerHTML      = statBox(DB.games?Math.round(DB.totalScore/DB.games):0,'Média de pontos');
   drawBars($('#stCats'),
-    ['Bandeiras','Capitais','Estados'],
-    ['bandeiras','capitais','estados'].map(k=>{
+    ['Bandeiras','Capitais','Estados','Tabuada'],
+    ['bandeiras','capitais','estados','tabuada'].map(k=>{
       const v=DB.byCat[k]; return v.t?Math.round(v.c/v.t*100):0;
     }), ['#ff9800','#00e676','#40c4ff','#e040fb']);
   drawLine($('#stHist'), DB.history.map(x=>x.score));
