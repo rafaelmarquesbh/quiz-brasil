@@ -23,7 +23,7 @@ let DB = store.load('quizBrasil', null) || {
 };
 let settings = Object.assign({ diff:'medio', sound:true }, store.load('quizBrasilSet', {}));
 // Compatibilidade com estatísticas salvas de versões anteriores.
-DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} }, DB.byCat || {});
+DB.byCat = Object.assign({ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, bandeirasMundiais:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} }, DB.byCat || {});
 
 const DIFFS = { facil:{label:'Fácil', time:20}, medio:{label:'Médio', time:15}, dificil:{label:'Difícil', time:10} };
 const CAT_LABEL = { bandeiras:'Bandeiras do Brasil', capitais:'Capitais do Brasil', estados:'Estados', tabuada:'Tabuada de X', paises:'Países do Mundo', bandeirasMundiais:'Bandeiras do Mundo', capitaisMundiais:'Capitais Mundiais', times:'Escudos de Times' };
@@ -116,7 +116,7 @@ function startGame(mode){
   G = {
     mode, qs, i:0, score:0, streak:0, bestStreak:0, correct:0, locked:false,
     time: DIFFS[settings.diff].time,
-    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
+    byCat:{ bandeiras:{c:0,t:0}, capitais:{c:0,t:0}, estados:{c:0,t:0}, tabuada:{c:0,t:0}, paises:{c:0,t:0}, bandeirasMundiais:{c:0,t:0}, capitaisMundiais:{c:0,t:0}, times:{c:0,t:0} },
   };
   showScreen('quiz');
   renderQuestion();
@@ -181,7 +181,7 @@ function renderQuestion(){
   $('#qPrompt').innerHTML = q.prompt;
   const fw = $('#flagWrap');
   if(q.flag){ fw.innerHTML = flagSVG(q.flag); fw.style.display='block'; }
-  else if(q.image){ fw.innerHTML = `<img class="flag ${q.imageClass||''}" src="${q.image}" alt="Imagem da pergunta" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'image-fallback\'>Imagem indisponível</span>')">`; fw.style.display='flex'; }
+  else if(q.image){ const fallback = q.cat==='times' ? '⚽ Escudo indisponível' : '🏳️ Bandeira indisponível'; fw.innerHTML = `<img class="flag ${q.imageClass||''}" src="${q.image}" alt="Imagem da pergunta" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'image-fallback\'>${fallback}</span>')">`; fw.style.display='flex'; }
   else { fw.innerHTML=''; fw.style.display='none'; }
 
   const grid = $('#options');
